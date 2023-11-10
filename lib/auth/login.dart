@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebasecourse/components/custombuttonauth.dart';
 import 'package:firebasecourse/components/customlogoauth.dart';
 import 'package:firebasecourse/components/textformfield.dart';
+import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -46,7 +48,7 @@ class _LoginState extends State<Login> {
               ),
               Container(height: 10),
               CustomTextForm(
-                  hinttext: "ُEnter Your Password", mycontroller: email),
+                  hinttext: "ُEnter Your Password", mycontroller: password),
               Container(
                 margin: const EdgeInsets.only(top: 10, bottom: 20),
                 alignment: Alignment.topRight,
@@ -59,7 +61,46 @@ class _LoginState extends State<Login> {
               ),
             ],
           ),
-          CustomButtonAuth(title: "login", onPressed: () {}),
+          CustomButtonAuth(
+              title: "login",
+              onPressed: () async {
+                try {
+                  final credential =
+                  await FirebaseAuth.instance.signInWithEmailAndPassword(
+                    email: email.text,
+                    password: password.text,
+                  );
+                  Navigator.of(context).pushReplacementNamed("homepage");
+                } on FirebaseAuthException catch (e) {
+                  /*password.clear();
+                  email.clear();*/
+
+                  print(e.code);
+
+                  if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
+                    print('No user found for that email.');
+                    print(
+                        '""""""""""""""""""""""No user found for that email.""""""""""""""""""""""');
+
+                    AwesomeDialog(
+                      context: context,
+                      dialogType: DialogType.info,
+                      animType: AnimType.rightSlide,
+                      title: 'Dialog Title',
+                      desc: 'Dialog description here.............',
+                    ).show();
+                  } else if (e.code == 'wrong-password') {
+                    print('Wrong password provided for that user.');
+                    await AwesomeDialog(
+                      context: context,
+                      dialogType: DialogType.info,
+                      animType: AnimType.rightSlide,
+                      title: 'Password error',
+                      desc: 'Wrong password provided for that user.',
+                    ).show();
+                  }
+                }
+              }),
           Container(height: 20),
 
           MaterialButton(
@@ -83,7 +124,7 @@ class _LoginState extends State<Login> {
           // Text("Don't Have An Account ? Resister" , textAlign: TextAlign.center,)
           InkWell(
             onTap: () {
-              Navigator.of(context).pushNamed("signup") ;
+              Navigator.of(context).pushReplacementNamed("signup");
             },
             child: const Center(
               child: Text.rich(TextSpan(children: [
